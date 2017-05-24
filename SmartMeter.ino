@@ -5,17 +5,17 @@ extern "C" {
 #include "Ticker.h"
 #include "ThingSpeak.h"
 
-unsigned long myChannelNumber = "ChannelNumber";
-const char * APIKey = "APIKey";
-byte mac[] = "MacAddress";
+unsigned long myChannelNumber = "";
+const char * APIKey = "";
+byte mac[] = "";
 WiFiClient client;
 Ticker ticker;
 
-char toSSID[] = "SSID";
-char ssidPASSWD[] = "Password";
+char toSSID[] = "";
+char ssidPASSWD[] = "";
 
-boolean timeflag = false;
-float yen= 0;
+volatile float CurrentValue = 0;
+volatile float PowerRates = 0;
 
 void setup() {
   //デバッグ用にシリアルを開く
@@ -42,36 +42,34 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   
-  // 割り込み処理の設定
-  ticker.attach(20, flag);
+  // 20秒に1回pushData関数を呼ぶ
+  ticker.attach(20, pushData);
 
   //ThingSpeak
   ThingSpeak.begin(client);
 }
 
-void flag() {
-  timeflag = true;        
+void pushData(float value){
+    ThingSpeak.setField(1, PowerRates);
+    ThingSpeak.setField(2, CurrentValue);
+    ThingSpeak.writeFields(myChannelNumber, APIKey);
+    Serial.println("push!");
+    Serial.print(String(CurrentValue) + "A");
+    Serial.println(String(PowerRates) + " yen   ");
+}
+
+void toElectryRates(float value){
+  // アンペアを求める計算
+  CurrentValue = value * 5 / 1024 * 3000 / (0.9 * 0.97 * 100);
+  Serial.print(String(CurrentValue) + "A");
+  // 電気料金の算出    
+  PowerRates += CurrentValue * 100 / 3600 / 1000 * 20.23;
+  Serial.println(String(PowerRates) + " yen   ");
 }
 
 void loop() {
-  float value = system_adc_read();
-  Serial.println(value);
-  // アンペアを求める計算
-  float io = value * 5 / 1024 * 3000 / (0.9 * 0.97 * 100);
-  // 電気料金の算出    
-  yen += io * 100 / 3600 / 1000 * 20.23;      
-  Serial.print(String(yen) + " yen   ");
-  Serial.println(String(io) + "A");
-  
-  if(timeflag == true){
-    ThingSpeak.setField(1, yen);
-    ThingSpeak.setField(2, io);
-    ThingSpeak.writeFields(myChannelNumber, APIKey);
-    Serial.println("push!");
-    timeflag = false;
-  }
-  
-  delay(500);
+  // TOUTピンからディジタル値を取得    
+  toElectryRates(system_adc_read());
 
   if (WiFi.status() != WL_CONNECTED) {
     WiFi.begin(toSSID, ssidPASSWD);
