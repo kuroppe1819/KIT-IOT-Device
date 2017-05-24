@@ -5,14 +5,14 @@ extern "C" {
 #include "Ticker.h"
 #include "ThingSpeak.h"
 
-unsigned long myChannelNumber = 161152;
-const char * APIKey = "9TL3XSVBRNBS9WQJ";
-byte mac[] = { 0x5C, 0xCF, 0x7F, 0x86, 0xD1, 0xB8 };
+unsigned long myChannelNumber = "ChannelNumber";
+const char * APIKey = "APIKey";
+byte mac[] = "MacAddress";
 WiFiClient client;
 Ticker ticker;
 
-char toSSID[] = "moyashinet";
-char ssidPASSWD[] = "atsusuke54";
+char toSSID[] = "SSID";
+char ssidPASSWD[] = "Password";
 
 boolean timeflag = false;
 float yen= 0;
