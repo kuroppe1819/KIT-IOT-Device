@@ -8,7 +8,7 @@ class SchmittTrigger {
 
     private:
       float m_threshold_voltage;
-      float m_variation;
+      float m_standard;
 };
 
 #endif
