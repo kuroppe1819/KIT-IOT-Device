@@ -1,14 +1,15 @@
 #include <Arduino.h>
 #include <MsTimer2.h>
+#include "SchmittTrigger.h"
 
 #define CURRENT_SENSOR 0
-#define SCHMITT_TRIGGER 4.0
+#define THRESHOLD_VOLTAGE 4.0
 
-float current_sum = 0;                      //電流センサの値の合計
-float threshold_voltage = SCHMITT_TRIGGER;  //しきい値電圧
-unsigned int read_count = 0;                //センサを読み込んだ回数をカウント
-volatile boolean interrupt = false;         //割り込み許可フラグ
-boolean power_on = false;                   //溶接機の電源
+float current_sum = 0;              //電流センサの値の合計
+unsigned int read_count = 0;        //センサを読み込んだ回数をカウント
+volatile boolean interrupt = false; //割り込み許可フラグ
+
+SchmittTrigger schmittTrigger = SchmittTrigger(THRESHOLD_VOLTAGE); //しきい値電圧を設定
 
 void interrupt_switch() {
     interrupt = true;
@@ -26,21 +27,13 @@ float calc_average() {
     return current_sum / read_count * 5 / 1024;
 }
 
-boolean jadge_of_power(float current_value) {
-    if (current_value > threshold_voltage) {
-        threshold_voltage = 5 - SCHMITT_TRIGGER;
-    } else {
-        threshold_voltage = SCHMITT_TRIGGER;
-    }
-    return current_value > threshold_voltage;
-}
-
 void loop() {
+    boolean power_on = false; //溶接機の電源
     current_sum += analogRead(CURRENT_SENSOR);
     read_count++;
 
     if (interrupt == true) {
-        power_on = jadge_of_power(calc_average());
+        power_on = schmittTrigger.isHigh(calc_average());
         Serial.println(power_on);
         current_sum = 0;
         read_count = 0;
