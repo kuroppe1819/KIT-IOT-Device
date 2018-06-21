@@ -11,7 +11,7 @@ float current_sum = 0;              //電流センサの値の合計
 unsigned int read_count = 0;        //センサを読み込んだ回数をカウント
 
 typedef volatile struct {
-    boolean flag = false;           //割り込み許可フラグ
+    boolean enable = false;           //割り込み許可フラグ
     unsigned int count = 0;         //割り込み回数
 } Interrupt;
 
@@ -19,7 +19,7 @@ Interrupt interrupt;
 SchmittTrigger schmittTrigger = SchmittTrigger(THRESHOLD_VOLTAGE); //しきい値電圧を設定
 
 void interrupt_switch() {
-    interrupt.flag = true;
+    interrupt.enable = true;
     interrupt.count++;
 }
 
@@ -40,15 +40,16 @@ void loop() {
     current_sum += analogRead(CURRENT_SENSOR);
     read_count++;
 
-    if (interrupt.flag == true) {
+    if (interrupt.enable) {
         power_on = schmittTrigger.isHigh(calc_average());
         current_sum = 0;
         read_count = 0;
-        interrupt.flag = false;
+        interrupt.enable = false;
     }
 
     if (interrupt.count * INTERRUPT_TIME >= SEND_TIME) {
         //親機へ送信するための処理
+        Serial.println(power_on);
         interrupt.count = 0;
     }
 }
