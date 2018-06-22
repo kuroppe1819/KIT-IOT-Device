@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <MsTimer2.h>
+#include <Metro.h>
 #include "SchmittTrigger.h"
 
 #define CURRENT_SENSOR 1                //電流センサの数
@@ -9,18 +9,8 @@
 
 float current_sum[CURRENT_SENSOR] = {}; //電流センサの値の合計
 unsigned int read_count = 0;            //センサを読み込んだ回数をカウント
-
-typedef volatile struct {
-    boolean enable = false;             //割り込み許可フラグ
-    unsigned int count = 0;             //割り込み回数
-} Interrupt;
-
-Interrupt interrupt;
-
-void interrupt_switch() {
-    interrupt.enable = true;
-    interrupt.count++;
-}
+Metro average_metro = Metro(INTERRUPT_TIME);
+Metro send_metro = Metro(SEND_TIME);
 
 void clear_variable() {
     for (int i =0; i < CURRENT_SENSOR; i++) {
@@ -33,8 +23,6 @@ void setup() {
     Serial.begin(9600);
     PORTC = 0x00;   //A0~A5を入力pinに設定する
     ADCSRA &= 0xFC; //分周比を16に設定する
-    MsTimer2::set(INTERRUPT_TIME, interrupt_switch);
-    MsTimer2::start();
 }
 
 float calc_average(float sum, unsigned int count) {
@@ -49,16 +37,14 @@ void loop() {
     }
     read_count++;
 
-    if (interrupt.enable) {
+    if (average_metro.check()) {
         for (int i = 0; i < CURRENT_SENSOR; i++) {
             power_on[i] = calc_average(current_sum[i], read_count) > THRESHOLD_VOLTAGE;
         }
         clear_variable();
-        interrupt.enable = false;
     }
 
-    if (interrupt.count * INTERRUPT_TIME >= SEND_TIME) {
+    if (send_metro.check()) {
         //親機へ送信するための処理
-        interrupt.count = 0;
     }
 }
