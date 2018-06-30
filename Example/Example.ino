@@ -2,6 +2,7 @@
 #include <Metro.h>
 
 #define CURRENT_SENSOR 1 //電流センサの数
+#define MAX_CURRENT_SENSOR 6 //電流センサを使用できる最大の数
 #define INTERRUPT_TIME 500 //割り込み間隔[ms]
 #define SEND_TIME 5000 //xbeeの送信間隔[ms]
 #define THRESHOLD_VOLTAGE 0.05 //しきい値電圧[V]
@@ -43,7 +44,7 @@ boolean is_power_on(boolean* power_on)
 
 void loop()
 {
-    boolean power_on[CURRENT_SENSOR] = {}; //溶接機の電源
+    boolean power_on[MAX_CURRENT_SENSOR] = {}; //溶接機の電源
 
     for (int i = 0; i < CURRENT_SENSOR; i++) {
         current_sum[i] += analogRead(i);
