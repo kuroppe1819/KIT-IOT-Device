@@ -1,11 +1,10 @@
 #include <Arduino.h>
 #include <Metro.h>
-#include "SchmittTrigger.h"
 
 #define CURRENT_SENSOR 1                //電流センサの数
-#define INTERRUPT_TIME 100              //割り込み間隔[ms]
+#define INTERRUPT_TIME 500              //割り込み間隔[ms]
 #define SEND_TIME 5000                  //xbeeの送信間隔[ms]                 
-#define THRESHOLD_VOLTAGE 3.0           //しきい値電圧[V]
+#define THRESHOLD_VOLTAGE 0.05           //しきい値電圧[V]
 
 float current_sum[CURRENT_SENSOR] = {}; //電流センサの値の合計
 unsigned int read_count = 0;            //センサを読み込んだ回数をカウント
@@ -29,6 +28,15 @@ float calc_average(float sum, unsigned int count) {
     return sum / count * 5 / 1024;
 }
 
+boolean is_power_on(boolean *power_on) {
+    for (int i = 0; i < CURRENT_SENSOR; i++) {
+        if (power_on[i] == true) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void loop() {
     boolean power_on[CURRENT_SENSOR] = {}; //溶接機の電源
 
@@ -41,10 +49,10 @@ void loop() {
         for (int i = 0; i < CURRENT_SENSOR; i++) {
             power_on[i] = calc_average(current_sum[i], read_count) > THRESHOLD_VOLTAGE;
         }
-        clear_variable();
-    }
 
-    if (send_metro.check()) {
-        //親機へ送信するための処理
+        if (is_power_on(power_on)) {
+            // xbeeの送信処理
+        }
+        clear_variable();
     }
 }
