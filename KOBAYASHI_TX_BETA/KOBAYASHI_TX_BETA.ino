@@ -10,7 +10,7 @@
 #define SS_PIN 4
 
 const int CODE_LIST_FILE = "codelist.txt";
-uint8_t id[4] = {};
+uint8_t id_list[4] = {};
 
 float current_sum = 0; //電流センサの値の合計
 unsigned int read_count = 0; //センサを読み込んだ回数をカウント
@@ -62,7 +62,7 @@ void setup()
     while (code_list.available()) {
         code.concat((char)code_list.read());
         if (code.charAt(code.length() - 1) == ' ') {
-            id[_index] = code.toInt();
+            id_list[_index] = code.toInt();
             code = "";
             _index++;
         }
@@ -77,19 +77,23 @@ float calc_average(float sum, unsigned int count)
 
 void pack_data_in_array(uint8_t* send_data, uint8_t payload)
 {
+    send_data[0] = 0xFF; // スタートビット
+    for (int i = 0; i < sizeof(id_list) / sizeof(uint8_t); i++) {
+        send_data[i + 1] = id_list[i];
+    }
     DateTime now = rtc.now();
-    send_data[0] = now.year() % 100;
-    send_data[1] = now.month();
-    send_data[2] = now.day();
-    send_data[3] = now.hour();
-    send_data[4] = now.minute();
-    send_data[5] = now.second();
-    send_data[6] = payload;
+    send_data[5] = now.year() % 100;
+    send_data[6] = now.month();
+    send_data[7] = now.day();
+    send_data[8] = now.hour();
+    send_data[9] = now.minute();
+    send_data[10] = now.second();
+    send_data[11] = payload;
 }
 
 void send_to_xbee(uint8_t payload)
 {
-    uint8_t send_data[7] = {};
+    uint8_t send_data[12] = {};
     pack_data_in_array(send_data, payload);
     ZBTxRequest zbTx = ZBTxRequest(addr64, send_data, sizeof(send_data));
     xbee.send(zbTx);
