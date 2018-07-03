@@ -1,11 +1,16 @@
 #include <Arduino.h>
 #include <Metro.h>
 #include <RTClib.h>
+#include <SD.h>
 #include <XBee.h>
 
 #define CURRENT_SENSOR_PORT 0 //電流センサが繋がっているポート番号
 #define INTERRUPT_TIME 500 //割り込み間隔[ms]
 #define THRESHOLD_VOLTAGE 0.05 //しきい値電圧[V]
+#define SS_PIN 4
+
+const int CODE_LIST_FILE = "codelist.txt";
+uint8_t id[4] = {};
 
 float current_sum = 0; //電流センサの値の合計
 unsigned int read_count = 0; //センサを読み込んだ回数をカウント
@@ -15,14 +20,20 @@ Metro average_metro = Metro(INTERRUPT_TIME);
 
 XBee xbee = XBee();
 XBeeAddress64 addr64 = XBeeAddress64(0x0013a200, 0x4166e492);
-
 RTC_DS1307 rtc;
+File code_list;
 
 void setup()
 {
     /** Serial Communication **/
     Serial.begin(9600);
     xbee.setSerial(Serial);
+
+    /** PORT **/
+    pinMode(SS_PIN, OUTPUT);
+    PORTC = 0x00; //A0~A5を入力pinに設定する
+    ADCSRA &= 0xFC; //分周比を16に設定する
+    delay(10);
 
     /** RTC **/
     if (!rtc.begin()) {
@@ -35,10 +46,28 @@ void setup()
         rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); //コンパイルした時の時間をRTCに記録する
     }
 
-    /** PORT **/
-    PORTC = 0x00; //A0~A5を入力pinに設定する
-    ADCSRA &= 0xFC; //分周比を16に設定する
-    delay(10);
+    /* SD */
+    if (!SD.begin()) {
+        Serial.println("Initialization of SD failed!");
+        return;
+    }
+    if (!SD.exists(CODE_LIST_FILE)) {
+        Serial.println("Couldn't find a text file");
+        return;
+    }
+    // エリアコードと機械コードをSDカードから読み取る
+    String code = "";
+    uint8_t _index = 0;
+    code_list = SD.open(CODE_LIST_FILE);
+    while (code_list.available()) {
+        code.concat((char)code_list.read());
+        if (code.charAt(code.length() - 1) == ' ') {
+            id[_index] = code.toInt();
+            code = "";
+            _index++;
+        }
+    }
+    code_list.close();
 }
 
 float calc_average(float sum, unsigned int count)
