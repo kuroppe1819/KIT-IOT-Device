@@ -5,10 +5,10 @@
 #include <XBee.h>
 
 #define SUB_MACHINE_ID 0x01 //子機を識別するためのID
-#define CURRENT_SENSOR_PORT 0 //電流センサが繋がっているポート番号
+#define CURRENT_SENSOR_PIN 0 //電流センサが繋がっているPIN番号
 #define INTERRUPT_TIME 500 //割り込み間隔[ms]
 #define THRESHOLD_VOLTAGE 0.05 //しきい値電圧[V]
-#define SS_PIN 4
+#define SS_PIN 4 //SDカードのハードウェアPIN番号
 
 const int CODE_LIST_FILE = "codelist.txt";
 uint8_t id_list[4] = {};
@@ -102,7 +102,7 @@ void send_to_xbee(uint8_t payload)
 
 void loop()
 {
-    current_sum += analogRead(CURRENT_SENSOR_PORT);
+    current_sum += analogRead(CURRENT_SENSOR_PIN);
     read_count++;
 
     if (average_metro.check()) {
