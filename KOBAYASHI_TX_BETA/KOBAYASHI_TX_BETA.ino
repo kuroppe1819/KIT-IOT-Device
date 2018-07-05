@@ -4,6 +4,7 @@
 #include <SD.h>
 #include <XBee.h>
 
+#define SUB_MACHINE_ID 0x01 //子機を識別するためのID
 #define CURRENT_SENSOR_PORT 0 //電流センサが繋がっているポート番号
 #define INTERRUPT_TIME 500 //割り込み間隔[ms]
 #define THRESHOLD_VOLTAGE 0.05 //しきい値電圧[V]
@@ -77,7 +78,7 @@ float calc_average(float sum, unsigned int count)
 
 void pack_data_in_array(uint8_t* send_data, uint8_t payload)
 {
-    send_data[0] = 0xFF; // スタートビット
+    send_data[0] = SUB_MACHINE_ID;
     for (int i = 0; i < sizeof(id_list) / sizeof(uint8_t); i++) {
         send_data[i + 1] = id_list[i];
     }
