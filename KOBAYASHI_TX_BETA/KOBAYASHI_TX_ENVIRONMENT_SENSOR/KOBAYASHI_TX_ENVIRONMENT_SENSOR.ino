@@ -8,7 +8,7 @@
 #define TEMPERATURE_SENSOR_PIN 1 //温度センサのPIN番号
 #define ILLUMINANCE_SENSOR_PIN 2 //照度センサのPIN番号
 #define HUMIDIFYSENSOR_PIN 3 //湿度センサのPIN番号
-#define INTERRUPT_TIME 60000 //割り込み間隔[ms]
+#define INTERRUPT_TIME 1000 //割り込み間隔[ms]
 #define SS_PIN 4 //SDカードのハードウェアPIN番号
 
 const int CODE_LIST_FILE = "codelist.txt";
@@ -68,7 +68,7 @@ void setup()
     code_list.close();
 }
 
-void pack_data_in_array(uint8_t* send_data, uint8_t payload)
+void pack_data_in_array(uint8_t* send_data, uint8_t* payload)
 {
     send_data[0] = SUB_MACHINE_ID;
     for (int i = 0; i < sizeof(id_list) / sizeof(uint8_t); i++) {
@@ -81,12 +81,15 @@ void pack_data_in_array(uint8_t* send_data, uint8_t payload)
     send_data[8] = now.hour();
     send_data[9] = now.minute();
     send_data[10] = now.second();
-    send_data[11] = payload;
+
+    for (int i = 0; i < sizeof(payload) / sizeof(uint8_t); i++){
+        send_data[i + 11] = payload;
+    }
 }
 
 void send_to_xbee(uint8_t payload)
 {
-    uint8_t send_data[12] = {};
+    uint8_t send_data[14] = {};
     pack_data_in_array(send_data, payload);
     ZBTxRequest zbTx = ZBTxRequest(addr64, send_data, sizeof(send_data));
     xbee.send(zbTx);
@@ -95,6 +98,7 @@ void send_to_xbee(uint8_t payload)
 void loop()
 {
     if (send_time_metro.check()) {
-        send_to_xbee(power_on);
+        uint8_t sample_send_data[] = {0x05, 0x06, 0x07};
+        send_to_xbee(sample_send_data);
     }
 }
