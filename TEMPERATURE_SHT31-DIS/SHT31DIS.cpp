@@ -7,11 +7,11 @@ SHT31DIS::SHT31DIS(int8_t addr, boolean clock_stretch, int8_t loop_accurately_le
     _addr = addr;
     _clock_stretch = clock_stretch;
     _loop_accurately_level = loop_accurately_level;
-    Wire.begin();
 }
 
 void SHT31DIS::begin(void)
 {
+    Wire.begin();
     Wire.beginTransmission(_addr);
     if (_clock_stretch) {
         Wire.write(CLOCK_STRETCH_SETTING_ENABLE); //MSB
@@ -48,16 +48,19 @@ void SHT31DIS::begin(void)
     for (int i = 0; i < 6; i++) {
         _read_buf[i] = Wire.read();
     }
+    delay(30);
 }
 
 float SHT31DIS::getTemperature(void)
 {
+    begin();
     uint16_t bind_temp = _read_buf[0] << 8 | _read_buf[1];
     return -45.0 + 175.0 * bind_temp / 65535.0;
 }
 
 float SHT31DIS::getHumidity(void)
 {
+    begin();
     uint16_t bind_humidity = _read_buf[3] << 8 | _read_buf[4];
     return 100.0 * bind_humidity / 65535.0;
 }

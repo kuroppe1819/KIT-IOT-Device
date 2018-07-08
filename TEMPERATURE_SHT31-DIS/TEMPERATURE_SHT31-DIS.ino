@@ -12,7 +12,6 @@ void setup()
 
 void loop()
 {
-    sht.begin();
     Serial.print("temp=");
     Serial.println(sht.getTemperature());
     Serial.print("humidity=");
