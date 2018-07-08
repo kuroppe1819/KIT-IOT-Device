@@ -1,3 +1,5 @@
+#include "SHT31DIS.h"
+#include "TSL2561.h"
 #include <Arduino.h>
 #include <Metro.h>
 #include <RTClib.h>
@@ -5,21 +7,21 @@
 #include <XBee.h>
 
 #define SUB_MACHINE_ID 0x02 //子機を識別するためのID
-#define TEMPERATURE_SENSOR_PIN 1 //温度センサのPIN番号
-#define ILLUMINANCE_SENSOR_PIN 2 //照度センサのPIN番号
-#define HUMIDIFYSENSOR_PIN 3 //湿度センサのPIN番号
 #define INTERRUPT_TIME 1000 //割り込み間隔[ms]
 #define SS_PIN 4 //SDカードのハードウェアPIN番号
 
 const int CODE_LIST_FILE = "codelist.txt";
+File code_list;
 uint8_t id_list[4] = {};
 
 Metro send_time_metro = Metro(INTERRUPT_TIME);
 
 XBee xbee = XBee();
 XBeeAddress64 addr64 = XBeeAddress64(0x0013a200, 0x4166e492);
+
 RTC_DS1307 rtc;
-File code_list;
+SHT31DIS sht = SHT31DIS(SHT31DIS_ADDR_FLOAT, false, LOOP_ACCURATELY_LEVEL_HIGH);
+TSL2561 tsl(TSL2561_ADDR_FLOAT);
 
 void setup()
 {
@@ -29,9 +31,12 @@ void setup()
 
     /** PORT **/
     pinMode(SS_PIN, OUTPUT);
-    //TODO: 使用するPIN番号を定義
-
     delay(10);
+
+    /** TSL2561 **/
+    tsl.begin();
+    tsl.setGain(TSL2561_GAIN_16X);
+    tsl.setTiming(TSL2561_INTEGRATIONTIME_13MS);
 
     /** RTC **/
     if (!rtc.begin()) {
@@ -68,7 +73,7 @@ void setup()
     code_list.close();
 }
 
-void pack_data_in_array(uint8_t* send_data, uint8_t* payload)
+void pack_data_in_array(uint8_t* send_data, uint8_t* payload, uint8_t payload_size)
 {
     send_data[0] = SUB_MACHINE_ID;
     for (int i = 0; i < sizeof(id_list) / sizeof(uint8_t); i++) {
@@ -82,15 +87,24 @@ void pack_data_in_array(uint8_t* send_data, uint8_t* payload)
     send_data[9] = now.minute();
     send_data[10] = now.second();
 
-    for (int i = 0; i < sizeof(payload) / sizeof(uint8_t); i++){
-        send_data[i + 11] = payload;
+    for (int i = 0; i < payload_size; i++) {
+        send_data[i + 11] = payload[i];
     }
 }
 
-void send_to_xbee(uint8_t payload)
+uint8_t get_lux()
+{
+    uint32_t lum = tsl.getFullLuminosity();
+    uint16_t ir, full;
+    ir = lum >> 16;
+    full = lum & 0xFFFF;
+    return (uint8_t)tsl.calculateLux(full, ir) & 0xFE; //0xFFは禁止コードなので0xFEでAND演算
+}
+
+void send_to_xbee(uint8_t* payload, uint8_t payload_size)
 {
     uint8_t send_data[14] = {};
-    pack_data_in_array(send_data, payload);
+    pack_data_in_array(send_data, payload, payload_size);
     ZBTxRequest zbTx = ZBTxRequest(addr64, send_data, sizeof(send_data));
     xbee.send(zbTx);
 }
@@ -98,7 +112,11 @@ void send_to_xbee(uint8_t payload)
 void loop()
 {
     if (send_time_metro.check()) {
-        uint8_t sample_send_data[] = {0x05, 0x06, 0x07};
-        send_to_xbee(sample_send_data);
+        uint8_t payload[3] = {};
+        uint8_t payload_size = sizeof(payload) / sizeof(uint8_t);
+        payload[0] = (uint8_t)sht.getTemperature();
+        payload[1] = (uint8_t)sht.getHumidity();
+        payload[2] = get_lux();
+        send_to_xbee(payload, payload_size);
     }
 }
