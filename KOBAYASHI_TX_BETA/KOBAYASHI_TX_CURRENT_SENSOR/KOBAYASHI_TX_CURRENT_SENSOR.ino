@@ -11,7 +11,7 @@
 #define SS_PIN 4 //SDカードのハードウェアPIN番号
 
 const int CODE_LIST_FILE = "codelist.txt";
-uint8_t id_list[4] = {};
+int area_code;
 
 float current_sum = 0; //電流センサの値の合計
 unsigned int read_count = 0; //センサを読み込んだ回数をカウント
@@ -56,20 +56,20 @@ void setup()
         Serial.println("Couldn't find a text file");
         return;
     }
-    // エリアコードと機械コードをSDカードから読み取る
-    String code = "";
-    uint8_t _index = 0;
-    code_list = SD.open(CODE_LIST_FILE);
-    while (code_list.available()) {
-        code.concat((char)code_list.read());
-        if (code.charAt(code.length() - 1) == ':') {
-            id_list[_index] = code.toInt();
-            Serial.println(id_list[_index]);
-            code = "";
-            _index++;
+
+    // エリアコードをSDカードから読み取る
+    String read_file = "";
+    File sd = SD.open(CODE_LIST_FILE);
+    while (sd.available()) {
+        char str = (char)sd.read();
+         if (str == ':') {
+            area_code = read_file.toInt();
+            break;
+        } else {
+            read_file.concat(str);
         }
     }
-    code_list.close();
+    sd.close();
 }
 
 float calc_average(float sum, unsigned int count)
@@ -79,18 +79,18 @@ float calc_average(float sum, unsigned int count)
 
 void pack_data_in_array(uint8_t* send_data, uint8_t payload)
 {
-    send_data[0] = SUB_MACHINE_ID;
-    for (int i = 0; i < sizeof(id_list) / sizeof(uint8_t); i++) {
-        send_data[i + 1] = id_list[i];
-    }
-    DateTime now = rtc.now();
-    send_data[5] = now.year() % 100;
-    send_data[6] = now.month();
-    send_data[7] = now.day();
-    send_data[8] = now.hour();
-    send_data[9] = now.minute();
-    send_data[10] = now.second();
-    send_data[11] = payload;
+    // send_data[0] = SUB_MACHINE_ID;
+    // for (int i = 0; i < sizeof(id_list) / sizeof(uint8_t); i++) {
+    //     send_data[i + 1] = id_list[i];
+    // }
+    // DateTime now = rtc.now();
+    // send_data[5] = now.year() % 100;
+    // send_data[6] = now.month();
+    // send_data[7] = now.day();
+    // send_data[8] = now.hour();
+    // send_data[9] = now.minute();
+    // send_data[10] = now.second();
+    // send_data[11] = payload;
 }
 
 void send_to_xbee(uint8_t payload)
