@@ -6,7 +6,7 @@
 #include <SD.h>
 #include <XBee.h>
 
-#define SUB_MACHINE_ID 0x02 //子機を識別するためのID
+#define SUB_MACHINE_ID 0x01 //子機を識別するためのID
 #define INTERRUPT_TIME 1000 //割り込み間隔[ms]
 #define SS_PIN 4 //SDカードのハードウェアPIN番号
 

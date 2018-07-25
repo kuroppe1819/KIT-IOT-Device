@@ -4,14 +4,14 @@
 #include <SD.h>
 #include <XBee.h>
 
-#define SUB_MACHINE_ID 0x01 //子機を識別するためのID
+#define SUB_MACHINE_ID 0x00 //子機を識別するためのID
 #define CURRENT_SENSOR_PIN 0 //電流センサが繋がっているPIN番号
 #define INTERRUPT_TIME 500 //割り込み間隔[ms]
 #define THRESHOLD_VOLTAGE 0.05 //しきい値電圧[V]
 #define SS_PIN 4 //SDカードのハードウェアPIN番号
 
 const int CODE_LIST_FILE = "codelist.txt";
-int area_code;
+uint16_t area_code;
 
 float current_sum = 0; //電流センサの値の合計
 unsigned int read_count = 0; //センサを読み込んだ回数をカウント
@@ -62,7 +62,7 @@ void setup()
     File sd = SD.open(CODE_LIST_FILE);
     while (sd.available()) {
         char str = (char)sd.read();
-         if (str == ':') {
+        if (str == ':') {
             area_code = read_file.toInt();
             break;
         } else {
@@ -79,23 +79,22 @@ float calc_average(float sum, unsigned int count)
 
 void pack_data_in_array(uint8_t* send_data, uint8_t payload)
 {
-    // send_data[0] = SUB_MACHINE_ID;
-    // for (int i = 0; i < sizeof(id_list) / sizeof(uint8_t); i++) {
-    //     send_data[i + 1] = id_list[i];
-    // }
-    // DateTime now = rtc.now();
-    // send_data[5] = now.year() % 100;
-    // send_data[6] = now.month();
-    // send_data[7] = now.day();
-    // send_data[8] = now.hour();
-    // send_data[9] = now.minute();
-    // send_data[10] = now.second();
-    // send_data[11] = payload;
+    send_data[0] = SUB_MACHINE_ID;
+    send_data[1] = (uint8_t)((area_code >> 8) & 0xFF); //エリアコードの上位8bit
+    send_data[2] = (uint8_t)(area_code & 0xFF); //エリアコードの下位8bit
+    DateTime now = rtc.now();
+    send_data[3] = now.year() % 100;
+    send_data[4] = now.month();
+    send_data[5] = now.day();
+    send_data[6] = now.hour();
+    send_data[7] = now.minute();
+    send_data[8] = now.second();
+    send_data[9] = payload;
 }
 
 void send_to_xbee(uint8_t payload)
 {
-    uint8_t send_data[12] = {};
+    uint8_t send_data[10] = {};
     pack_data_in_array(send_data, payload);
     ZBTxRequest zbTx = ZBTxRequest(addr64, send_data, sizeof(send_data));
     xbee.send(zbTx);
