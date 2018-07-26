@@ -97,7 +97,7 @@ uint8_t get_lux()
     uint16_t ir, full;
     ir = lum >> 16;
     full = lum & 0xFFFF;
-    return (uint8_t)tsl.calculateLux(full, ir) & 0xFE; //0xFFは禁止コードなので0xFEでAND演算
+    return (uint8_t)tsl.calculateLux(full, ir);
 }
 
 void send_to_xbee(uint8_t* payload, uint8_t payload_size)
