@@ -35,9 +35,18 @@ void setup()
     monitor.println("Starting up!");
 }
 
+uint8_t calc_checksum(uint8_t* send_data)
+{
+    uint16_t sum = 0;
+    for (int i = 0; i < send_frame_size; i++) {
+        sum += send_data[i + 2]; //2~14の範囲の合計
+    }
+    return 0xFF - (sum & 0xFF); //チェックサムの計算
+}
+
 void serial_write(uint8_t* get_data, struct AreaData area_data)
 {
-    uint8_t send_data[] = {
+    uint8_t send_data[16] = {
         0xFF, //スタートビット
         send_frame_size,
         get_data[1], //エリアコードの上位8bit
@@ -53,19 +62,21 @@ void serial_write(uint8_t* get_data, struct AreaData area_data)
         area_data.humidity,
         area_data.illumination,
         area_data.dust,
-        0xFF //TODO: チェックサム
+        0x00 //チェックサム
     };
 
-    //TODO:WPFアプリケーションにシリアル通信でデータを送る
-    monitor.print("AreaCode=");
-    monitor.println((rx.getData()[1] << 8) + rx.getData()[2]);
-    for (int i = 0; i < send_data_size; i++) {
-        monitor.print("frame");
-        monitor.print("[");
-        monitor.print(i, DEC);
-        monitor.print("] is ");
-        monitor.println(send_data[i], HEX);
-    }
+    send_data[send_data_size - 1] = calc_checksum(send_data);
+    monitor.write(send_data, send_data_size);
+
+    // monitor.print("AreaCode=");
+    // monitor.println((rx.getData()[1] << 8) + rx.getData()[2]);
+    // for (int i = 0; i < send_data_size; i++) {
+    //     monitor.print("frame");
+    //     monitor.print("[");
+    //     monitor.print(i, DEC);
+    //     monitor.print("] is ");
+    //     monitor.println(send_data[i], HEX);
+    // }
 }
 
 void loop()
