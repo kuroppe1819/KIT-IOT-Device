@@ -6,8 +6,8 @@
 
 #define SUB_MACHINE_ID 0x00 //子機を識別するためのID
 #define CURRENT_SENSOR_PIN 0 //電流センサが繋がっているPIN番号
-#define INTERRUPT_TIME 500 //割り込み間隔[ms]
-#define THRESHOLD_VOLTAGE 0.05 //しきい値電圧[V]
+#define INTERRUPT_TIME 250 //割り込み間隔[ms]
+#define THRESHOLD_VOLTAGE 1.0 //しきい値電圧[V]
 #define SS_PIN 4 //SDカードのハードウェアPIN番号
 
 const int CODE_LIST_FILE = "codelist.txt";
