@@ -9,6 +9,7 @@
 #define SUB_MACHINE_ID 0x01 //子機を識別するためのID
 #define INTERRUPT_TIME 1000 //割り込み間隔[ms]
 #define SS_PIN 4 //SDカードのハードウェアPIN番号
+#define FRAME_SIZE 12 //XBeeに送信するフレームのサイズ
 
 const int CODE_LIST_FILE = "codelist.txt";
 uint16_t area_code;
@@ -102,7 +103,7 @@ uint8_t get_lux()
 
 void send_to_xbee(uint8_t* payload, uint8_t payload_size)
 {
-    uint8_t send_data[12] = {};
+    uint8_t send_data[FRAME_SIZE] = {};
     pack_data_in_array(send_data, payload, payload_size);
     ZBTxRequest zbTx = ZBTxRequest(addr64, send_data, sizeof(send_data));
     xbee.send(zbTx);

@@ -9,6 +9,7 @@
 #define INTERRUPT_TIME 250 //割り込み間隔[ms]
 #define THRESHOLD_VOLTAGE 1.0 //しきい値電圧[V]
 #define SS_PIN 4 //SDカードのハードウェアPIN番号
+#define FRAME_SIZE 10 //XBeeに送信するフレームのサイズ
 
 const int CODE_LIST_FILE = "codelist.txt";
 uint16_t area_code;
@@ -94,7 +95,7 @@ void pack_data_in_array(uint8_t* send_data, uint8_t payload)
 
 void send_to_xbee(uint8_t payload)
 {
-    uint8_t send_data[10] = {};
+    uint8_t send_data[FRAME_SIZE] = {};
     pack_data_in_array(send_data, payload);
     ZBTxRequest zbTx = ZBTxRequest(addr64, send_data, sizeof(send_data));
     xbee.send(zbTx);
