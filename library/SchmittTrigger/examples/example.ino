@@ -1,3 +1,4 @@
+#include "SchmittTrigger.h"
 #include <Arduino.h>
 #include <Metro.h>
 
