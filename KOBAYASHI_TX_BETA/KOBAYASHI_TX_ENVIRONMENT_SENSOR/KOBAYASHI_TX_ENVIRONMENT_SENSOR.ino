@@ -7,7 +7,7 @@
 #include <XBee.h>
 
 #define SUB_MACHINE_ID 0x01 //子機を識別するためのID
-#define INTERRUPT_TIME 1000 //割り込み間隔[ms]
+#define INTERRUPT_TIME 60000 //割り込み間隔[ms]
 #define SS_PIN 4 //SDカードのハードウェアPIN番号
 #define FRAME_SIZE 12 //XBeeに送信するフレームのサイズ
 
