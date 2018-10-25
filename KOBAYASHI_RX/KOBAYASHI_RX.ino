@@ -47,7 +47,7 @@ void serial_write(uint8_t* get_data, uint8_t get_data_length)
     send_data[send_data_length - 1] = 0x00; //ストップビット
     monitor.write(send_data, send_data_length);
 
-    print_send_data(send_data, send_data_length);
+    // print_send_data(send_data, send_data_length);
 }
 
 void print_send_data(uint8_t* send_data, uint8_t send_data_length)
