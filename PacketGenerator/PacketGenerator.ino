@@ -44,10 +44,10 @@ uint8_t environmentArrayData[environmentArrayLength] = {
     0x00, //ストップビット
 };
 
-uint8_t calcChecksum(uint8_t* arrayData, uint8_t arrayLength)
+uint8_t calcChecksum(uint8_t* arrayData, uint8_t frameLength)
 {
     uint16_t sum = 0;
-    for (int i = 0; i < arrayLength; i++) {
+    for (int i = 0; i < frameLength; i++) {
         sum += arrayData[i + 2];
     }
     return 0xFF - (sum & 0xFF); //チェックサムの計算
@@ -56,14 +56,14 @@ uint8_t calcChecksum(uint8_t* arrayData, uint8_t arrayLength)
 void setup()
 {
     Serial.begin(9600);
-    currentArrayData[currentArrayLength - 2] = calcChecksum(currentArrayData, currentArrayLength);
-    environmentArrayData[environmentArrayLength - 2] = calcChecksum(environmentArrayData, environmentArrayLength);
+    currentArrayData[currentArrayLength - 2] = calcChecksum(currentArrayData, currentArrayData[1]);
+    environmentArrayData[environmentArrayLength - 2] = calcChecksum(environmentArrayData, environmentArrayData[1]);
 }
 
 void loop()
 {
     if (interrupt.check()) {
         Serial.write(currentArrayData, currentArrayLength);
-        // Serial.write(environmentArrayData, environmentArrayLength);
+        Serial.write(environmentArrayData, environmentArrayLength);
     }
 }
