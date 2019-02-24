@@ -5,7 +5,7 @@
 - KOBAYASHI_TX: 子機のプログラム
 - PacketGenerator: シリアル解析ソフトウェアのテストに使用するプログラム
 
-##使用しているライブラリ
+## 使用しているライブラリ
 - [xbee-arduino](https://github.com/andrewrapp/xbee-arduino): Arduino用のXBeeライブラリ
 - [RTClib](https://github.com/adafruit/RTClib): RTC(DS1307)のライブラリ
 - [Metro](http://playground.arduino.cc/Code/Metro): Arduinoのタイマーライブラリ
