@@ -17,7 +17,7 @@ uint16_t area_code;
 Metro send_time_metro = Metro(INTERRUPT_TIME);
 
 XBee xbee = XBee();
-XBeeAddress64 addr64 = XBeeAddress64(0x0013a200, 0x4166e492);
+XBeeAddress64 addr64 = XBeeAddress64(0x0013a200, 0x4166e492); //親機に設定したIDを指定する
 
 RTC_DS1307 rtc;
 SHT31DIS sht = SHT31DIS(SHT31DIS_ADDR_FLOAT, false, LOOP_ACCURATELY_LEVEL_HIGH);

@@ -21,7 +21,7 @@ boolean power_state = false; //溶接機の電源の状態
 Metro average_metro = Metro(INTERRUPT_TIME);
 
 XBee xbee = XBee();
-XBeeAddress64 addr64 = XBeeAddress64(0x0013a200, 0x4166e492);
+XBeeAddress64 addr64 = XBeeAddress64(0x0013a200, 0x4166e492); //親機に設定したIDを指定する
 RTC_DS1307 rtc;
 File code_list;
 
