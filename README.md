@@ -10,7 +10,7 @@
 - Sensors
     - LTH: Digi XBee LTH Sensorsの動作確認用プログラム
     - Plug: Digi XBee Smart Plugの動作確認用プログラム
-- codelist.txt: デバイスのSDカードに保存されているファイル。エリアコードを記述する。
+- codelist.txt: デバイスのSDカードに保存されているファイル。エリアコードを記述する。SDカードを使用せずにプログラムの中で直接エリアコードを指定する場合は必要なし。
 
 ## 使用しているライブラリ
 - [xbee-arduino](https://github.com/andrewrapp/xbee-arduino): Arduino用のXBeeライブラリ
