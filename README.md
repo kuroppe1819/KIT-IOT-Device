@@ -13,7 +13,7 @@
 
 ## XBeeの設定
 1. XCTUの[ダウンロード](https://www.digi.com/products/iot-platform/xctu)
-1. XB24CとPCをUSBで接続。ファームウェアバージョンを4043に設定する。
+1. XBeeS24CとPCをUSBで接続。ファームウェアバージョンを4043に設定する。
 1. XBeeの設定を下記のように変更して書き込む
 
 親機
