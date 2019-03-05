@@ -3,7 +3,14 @@
 
 - KOBAYASHI_RX: 親機のプログラム
 - KOBAYASHI_TX: 子機のプログラム
+- library
+    - SchmittTrigger: シュミットトリガーのサンプル
+    - SHT31DIS: 温湿度センサ用のライブラリ
 - PacketGenerator: シリアル解析ソフトウェアのテストに使用するプログラム
+- Sensors
+    - LTH: Digi XBee LTH Sensorsの動作確認用プログラム
+    - Plug: Digi XBee Smart Plugの動作確認用プログラム
+- codelist.txt: デバイスのSDカードに保存されているファイル。エリアコードを記述する。
 
 ## 使用しているライブラリ
 - [xbee-arduino](https://github.com/andrewrapp/xbee-arduino): Arduino用のXBeeライブラリ
@@ -37,5 +44,3 @@
 |AP: API Enable|2|
 |DH: Destination Address High|親機のMACアドレス上位8桁|
 |DL: Destination Address Low|親機のMACアドレス下位8桁|
-
-
