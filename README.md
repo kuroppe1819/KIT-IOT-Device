@@ -1,6 +1,7 @@
 # IoT device for Kobayashi Mfg
-小林製作所で使用するIoTデバイスのプログラム
+小林製作所で使用するIoTデバイスのプログラムと回路図
 
+- Arduino_As_Kobayashi: デバイスの回路図
 - KOBAYASHI_RX: 親機のプログラム
 - KOBAYASHI_TX: 子機のプログラム
 - library
